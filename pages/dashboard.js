@@ -1,7 +1,34 @@
 import Head from 'next/head'
 import Script from 'next/script'
+import { supabase } from '../lib/supabaseClient'
 
 export default function Dashboard() {
+  async function handleCreateTeam() {
+    const teamName = prompt("Enter new team name:");
+    if (!teamName) return;
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      alert("User not logged in!");
+      return;
+    }
+
+    const res = await fetch('/api/createTeam', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: teamName, leader_id: user.id })
+    });
+
+    const { error } = await res.json();
+
+    if (error) {
+      alert("Error creating team: " + error.message);
+    } else {
+      alert("Team created!");
+      window.location.reload();
+    }
+  }
+
   return (
     <>
       <Head>
@@ -37,12 +64,13 @@ export default function Dashboard() {
           <p>make figma for app</p>
         </div>
 
-        <a href="/team" className="card-link">
-          <div className="card">
-            <h3>Teams</h3>
-            <p>Taskmasters dev team (leader)<br />YEP team (member)</p>
-          </div>
-        </a>
+        <div className="card">
+          <h3>Teams</h3>
+          <p>Taskmasters dev team (leader)<br />YEP team (member)</p>
+          <button onClick={handleCreateTeam} style={{ marginTop: '10px' }}>
+            ➕ Create Team
+          </button>
+        </div>
 
         <div className="card">
           <h3>inbox</h3>
