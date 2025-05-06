@@ -4,16 +4,6 @@ import TeamActions from '../components/TeamActions'
 
 export default function TeamPage() {
   return (
-    <div>
-      <h1>Team Management</h1>
-      <TeamActions />
-    </div>
-  )
-}
-
-
-export default function TeamPage() {
-  return (
     <>
       <Head>
         <title>Team - TaskMaster</title>
