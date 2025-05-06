@@ -1,31 +1,46 @@
 import Head from 'next/head'
 import Script from 'next/script'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 export default function Dashboard() {
-  async function handleCreateTeam() {
-    const teamName = prompt("Enter new team name:");
-    if (!teamName) return;
+  const [teams, setTeams] = useState([])
+  const [user, setUser] = useState(null)
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      alert("User not logged in!");
-      return;
-    }
+  useEffect(() => {
+    fetchTeams()
+  }, [])
+
+  async function fetchTeams() {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error || !user) return
+    setUser(user)
+
+    const { data: teamData } = await supabase
+      .from('team_members')
+      .select('team_id, role, teams(name)')
+      .eq('user_id', user.id)
+
+    setTeams(teamData || [])
+  }
+
+  async function handleCreateTeam() {
+    const teamName = prompt("Enter new team name:")
+    if (!teamName || !user) return
 
     const res = await fetch('/api/createTeam', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: teamName, leader_id: user.id })
-    });
+    })
 
-    const { error } = await res.json();
+    const { error } = await res.json()
 
     if (error) {
-      alert("Error creating team: " + error.message);
+      alert("Error creating team: " + error.message)
     } else {
-      alert("Team created!");
-      window.location.reload();
+      alert("Team created!")
+      fetchTeams() // 🔁 Refresh team list
     }
   }
 
@@ -35,6 +50,7 @@ export default function Dashboard() {
         <title>Dashboard - TaskMaster</title>
       </Head>
       <Script src="/scripts/script.js" strategy="lazyOnload" />
+      
       <nav className="navbar">
         <div className="logo-group">
           <img src="/assets/logo.png" className="logo-img" alt="logo" />
@@ -66,7 +82,11 @@ export default function Dashboard() {
 
         <div className="card">
           <h3>Teams</h3>
-          <p>Taskmasters dev team (leader)<br />YEP team (member)</p>
+          {teams.map((t) => (
+            <p key={t.team_id}>
+              {t.teams?.name} ({t.role})
+            </p>
+          ))}
           <button onClick={handleCreateTeam} style={{ marginTop: '10px' }}>
             ➕ Create Team
           </button>
@@ -80,3 +100,4 @@ export default function Dashboard() {
     </>
   )
 }
+
