@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Script from 'next/script'
-import TeamActions from '../components/TeamActions'
+import TeamActions from '../Components/TeamActions'
 
 export default function TeamPage() {
   return (
@@ -20,7 +20,7 @@ export default function TeamPage() {
           <a href="/team">team</a>
           <a href="/">logout</a>
         </div>
-      </nav>
+      </nav>w
 
       <div className="team-box">
         <h3>figma dev team</h3>
