@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Script from 'next/script'
-import TeamActions from '../Components/TeamActions'
+import TeamActions from '../Components/TeamActions.jsx'
 
 export default function TeamPage() {
   return (
