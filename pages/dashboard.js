@@ -1,73 +1,103 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import Head from 'next/head'
+import Script from 'next/script'
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
 
 export default function Dashboard() {
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [teams, setTeams] = useState([])
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    fetchTeams()
+  }, [])
 
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('teams(name), role')
-        .eq('user_id', user.id);
+  async function fetchTeams() {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error || !user) return
+    setUser(user)
 
-      if (!error && data) {
-        setTeams(data);
-      }
-      setLoading(false);
-    };
+    const { data: teamData } = await supabase
+      .from('team_members')
+      .select('team_id, role, teams(name)')
+      .eq('user_id', user.id)
 
-    fetchTeams();
-  }, []);
+    setTeams(teamData || [])
+  }
 
-  const handleCreateTeam = async () => {
-    const teamName = prompt("Enter new team name:");
-    if (!teamName) return;
+  async function handleCreateTeam() {
+    const teamName = prompt("Enter new team name:")
+    if (!teamName || !user) return
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      alert("User not logged in!");
-      return;
-    }
+    const res = await fetch('/api/createTeam', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: teamName, leader_id: user.id })
+    })
 
-    const { data, error } = await supabase
-      .from('teams')
-      .insert({ name: teamName, created_by: user.id })
-      .select()
-      .single();
+    const { error } = await res.json()
 
     if (error) {
-      alert("Error creating team: " + error.message);
+      alert("Error creating team: " + error.message)
     } else {
-      await supabase.from('team_members').insert({
-        user_id: user.id,
-        team_id: data.id,
-        role: 'leader'
-      });
-      alert("Team created!");
-      window.location.reload();
+      alert("Team created!")
+      fetchTeams() // 🔁 Refresh team list
     }
-  };
+  }
 
   return (
-    <div className="card">
-      <h3>Teams</h3>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        teams.map((team, i) => (
-          <p key={i}>
-            {team.teams?.name} ({team.role})
-          </p>
-        ))
-      )}
-      <button onClick={handleCreateTeam} style={{ marginTop: '10px' }}>
-        ➕ Create Team
-      </button>
-    </div>
-  );
+    <>
+      <Head>
+        <title>Dashboard - TaskMaster</title>
+      </Head>
+      <Script src="/scripts/script.js" strategy="lazyOnload" />
+      
+      <nav className="navbar">
+        <div className="logo-group">
+          <img src="/assets/logo.png" className="logo-img" alt="logo" />
+          <div className="logo-text">TaskMaster</div>
+        </div>
+        <div className="nav-links">
+          <a href="/dashboard">home</a>
+          <a href="#">tasks</a>
+          <a href="/team">team</a>
+          <a href="/">logout</a>
+        </div>
+      </nav>
+
+      <div className="dashboard-row">
+        <div className="card profile-card">
+          <img src="/assets/logo.png" alt="Profile Picture" className="profile-img" />
+          <div>
+            <h3>Ferdinan Nathanael</h3>
+            <p><strong id="role-display">God among men</strong><br />Taskmasters development team</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="dashboard-row">
+        <div className="card">
+          <h3>you have 1 ongoing tasks</h3>
+          <p>make figma for app</p>
+        </div>
+
+        <div className="card">
+          <h3>Teams</h3>
+          {teams.map((t) => (
+            <p key={t.team_id}>
+              {t.teams?.name} ({t.role})
+            </p>
+          ))}
+          <button onClick={handleCreateTeam} style={{ marginTop: '10px' }}>
+            ➕ Create Team
+          </button>
+        </div>
+
+        <div className="card">
+          <h3>inbox</h3>
+          <p>team A : pls go fast<br />team B : no U</p>
+        </div>
+      </div>
+    </>
+  )
 }
+
