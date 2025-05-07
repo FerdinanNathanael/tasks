@@ -10,16 +10,16 @@ export default function Dashboard() {
   const fetchTeams = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-  
+
     const { data, error } = await supabase
       .from('team_members')
       .select('role, teams(name)')
       .eq('user_id', user.id)
-  
+
     if (!error && data) setTeams(data)
     setLoading(false)
   }
-  
+
 
   useEffect(() => {
     fetchTeams()
@@ -36,10 +36,10 @@ export default function Dashboard() {
     }
 
     const { data, error } = await supabase
-      .from('teams')
-      .insert({ name: teamName, leader_id: user.id })
-      .select()
-      .single()
+      .from('team_members')
+      .select('teams(id, name), role') // ✅ include id here!
+      .eq('user_id', user.id)
+
 
     if (error) {
       alert("Error creating team: " + error.message)
@@ -95,11 +95,14 @@ export default function Dashboard() {
           ) : (
             teams.map((team, i) => (
               <p key={i}>
-                <a href={`/team?id=${team.teams?.id}`} style={{ color: 'white', textDecoration: 'none' }}>
+                <a
+                  href={`/team?id=${team.teams?.id}`}
+                  style={{ color: 'white', textDecoration: 'none' }}
+                >
                   {team.teams?.name} ({team.role})
                 </a>
               </p>
-            ))            
+            ))
           )}
           <button onClick={handleCreateTeam} style={{ marginTop: '10px' }}>
             ➕ Create Team
