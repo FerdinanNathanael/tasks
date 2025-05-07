@@ -10,15 +10,16 @@ export default function Dashboard() {
   const fetchTeams = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
+  
     const { data, error } = await supabase
       .from('team_members')
-      .select('teams(name), role')
+      .select('role, teams(name)')
       .eq('user_id', user.id)
-
+  
     if (!error && data) setTeams(data)
     setLoading(false)
   }
+  
 
   useEffect(() => {
     fetchTeams()
