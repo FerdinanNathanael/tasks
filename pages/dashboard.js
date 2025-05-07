@@ -97,7 +97,7 @@ export default function Dashboard() {
               <p key={i}>
                 <a
                   href={`/team?id=${team.teams?.id}`}
-                  style={{ color: 'black', textDecoration: 'none' }}
+                  style={{ color: 'white', textDecoration: 'none' }}
                 >
                   {team.teams?.name} ({team.role})
                 </a>
