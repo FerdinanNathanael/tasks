@@ -37,7 +37,7 @@ export default function Dashboard() {
 
     const { data, error } = await supabase
       .from('team_members')
-      .select('teams(id, name), role') // ✅ include id here!
+      .select('teams(id, name), role') 
       .eq('user_id', user.id)
 
 
@@ -97,7 +97,7 @@ export default function Dashboard() {
               <p key={i}>
                 <a
                   href={`/team?id=${team.teams?.id}`}
-                  style={{ color: 'white', textDecoration: 'none' }}
+                  style={{ color: 'black', textDecoration: 'none' }}
                 >
                   {team.teams?.name} ({team.role})
                 </a>
