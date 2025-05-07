@@ -94,8 +94,12 @@ export default function Dashboard() {
             <p>No teams yet</p>
           ) : (
             teams.map((team, i) => (
-              <p key={i}>{team.teams?.name} ({team.role})</p>
-            ))
+              <p key={i}>
+                <a href={`/team?id=${team.teams?.id}`} style={{ color: 'white', textDecoration: 'none' }}>
+                  {team.teams?.name} ({team.role})
+                </a>
+              </p>
+            ))            
           )}
           <button onClick={handleCreateTeam} style={{ marginTop: '10px' }}>
             ➕ Create Team
